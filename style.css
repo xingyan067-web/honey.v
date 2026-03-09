@@ -3,16 +3,15 @@
 * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; outline: none; user-select: none; font-family: inherit; }
 /* --- 从这里开始替换 --- */
 html, body {
-    width: 100%;
-    height: 100%;
-    height: -webkit-fill-available; /* 苹果专属：完美填满可用屏幕，不超出版心 */
+    width: 100vw;
+    height: 100vh; /* 强制使用物理屏幕高度 */
     margin: 0;
     padding: 0;
     overflow: hidden;
     position: fixed;
     top: 0;
     left: 0;
-    background: #fff; /* 彻底告别黑边，改为白色底 */
+    background: #000;
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
 }
@@ -21,9 +20,8 @@ body, input, textarea, select, button {
     font-family: inherit !important;
 }
 #app-root {
-    width: 100%;
-    height: 100%;
-    height: -webkit-fill-available;
+    width: 100vw;
+    height: 100vh;
     position: absolute; 
     top: 0;
     left: 0;
@@ -31,7 +29,6 @@ body, input, textarea, select, button {
     background-color: transparent;
     z-index: 1;
 }
-
 /* --- SVG 图标通用类 --- */
 .svg-icon { width: 24px; height: 24px; fill: currentColor; }
 
@@ -4198,24 +4195,23 @@ input::-webkit-inner-spin-button {
 
 /* 1. 基础变量 */
 :root {
-  --app-height: 100%;
+  --app-height: 100vh;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --keyboard-offset: 0px;
 }
 
-/* 2. 根节点强制全屏 (关键修复点) */
+/* 2. 根节点强制全屏 */
 html, body {
-  width: 100%;
-  height: 100%;
-  height: -webkit-fill-available; 
+  width: 100vw !important;
+  height: 100vh !important;
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: fixed; 
+  position: fixed;
   inset: 0;
-  background: #fff; 
-  overscroll-behavior: none; 
+  background: #000;
+  overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -4223,43 +4219,62 @@ html, body {
 #app-root {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  height: -webkit-fill-available;
+  width: 100vw !important;
+  height: 100vh !important;
   overflow: hidden;
-  background: transparent;
   z-index: 1;
 }
 
-/* 4. 主屏幕容器 */
+/* 4. 主屏幕容器 (核心修复：box-sizing 保证背景铺满物理边缘) */
 .screen {
   position: absolute;
   inset: 0;
-  width: 100%;
-  height: 100%;
-  height: -webkit-fill-available;
+  width: 100vw !important;
+  height: 100vh !important;
+  box-sizing: border-box !important; /* 关键：让 padding 不会增加总高度 */
+  padding-top: var(--safe-top);
+  padding-bottom: var(--safe-bottom);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding-top: var(--safe-top);
-  padding-bottom: var(--safe-bottom);
   background-size: cover !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
-  background-color: #fff; 
+  background-color: #000;
 }
 
-/* 5. Dock 栏贴底 */
+/* 5. 所有全屏模态框统一高度 */
+.settings-modal,
+.dream-fullscreen-view,
+#wc-view-phone-sim,
+#activation-overlay,
+#wechatModal,
+#musicModal,
+#loversSpaceModal,
+#music-full-player,
+#wc-view-shopping {
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* 6. Dock 栏贴底 */
 .dock-container {
   position: absolute;
-  bottom: 0 !important; 
+  bottom: 0 !important;
   left: 0;
   width: 100%;
   display: flex;
   justify-content: center;
   padding: 0 15px calc(var(--safe-bottom) + 8px) 15px !important;
   z-index: 10;
+  box-sizing: border-box !important;
 }
 
 .dock {
@@ -4275,29 +4290,6 @@ html, body {
   padding: 0 15px;
 }
 
-/* 6. 所有全屏模态框统一高度 */
-.settings-modal,
-.dream-fullscreen-view,
-#wc-view-phone-sim,
-#activation-overlay,
-#wechatModal,
-#musicModal,
-#loversSpaceModal,
-#music-full-player,
-#wc-view-shopping {
-  position: absolute !important;
-  inset: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  height: -webkit-fill-available !important;
-  min-height: 100% !important;
-  max-height: none !important; 
-  overflow: hidden !important;
-  padding-top: var(--safe-top);
-  /* 关键修复：删除 padding-bottom，让内部组件自己处理底部安全区，防止双重挤压把按钮顶出屏幕 */
-  box-sizing: border-box !important;
-}
-
 /* 7. 微信/聊天页面特殊处理 */
 #wechat-root {
   width: 100%;
@@ -4307,8 +4299,7 @@ html, body {
 }
 
 #wc-view-chat-detail {
-  height: 100% !important;
-  min-height: 100% !important;
+  height: 100vh !important;
   overflow: hidden !important;
   background: #F2F2F7;
 }
@@ -4329,8 +4320,9 @@ html, body {
   width: 100%;
   background: #F7F7F7;
   border-top: 0.5px solid #C6C6C8;
-  padding: 8px 12px max(10px, env(safe-area-inset-bottom)) 12px !important;
+  padding: 8px 12px max(10px, var(--safe-bottom)) 12px !important;
   z-index: 1200;
+  box-sizing: border-box !important;
 }
 
 /* 8. 底部 Tabbar 统一处理 */
@@ -4344,17 +4336,20 @@ html, body {
   z-index: 1000;
   pointer-events: none;
   padding-bottom: max(20px, var(--safe-bottom)) !important;
+  box-sizing: border-box !important;
 }
 
 .ins-music-tabbar,
 .ls-tabbar,
 .settings-tab-bar {
   padding-bottom: var(--safe-bottom) !important;
+  box-sizing: border-box !important;
 }
 
-/* 9. 音乐播放器底部控制栏恢复安全距离 */
+/* 9. 音乐播放器底部控制栏 */
 .ins-music-fp-controls {
-  padding: 10px 30px calc(env(safe-area-inset-bottom, 20px) + 20px) 30px !important;
+  padding: 10px 30px calc(var(--safe-bottom) + 20px) 30px !important;
+  box-sizing: border-box !important;
 }
 
 /* 10. 防止 iOS 橡皮筋滚动露底 */

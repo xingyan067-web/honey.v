@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-title" content="Theme Studio">
     
     <!-- 优化视口配置：viewport-fit=cover 是延伸到刘海和底部的核心 -->
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     
     <!-- 图标配置 -->
     <link rel="apple-touch-icon" href="https://i.postimg.cc/yYrDHvG5/mmexport1766982633245.jpg">
@@ -1784,22 +1784,10 @@
                             <div class="shop-cart-badge" id="shop-cart-badge">0</div>
                         </div>
                     </div>
-                    <!-- My Favorites Full Page (New Full Screen) -->
-                    <div id="wc-view-my-favorites" class="dream-fullscreen-view" style="z-index: 1400; background: #F2F2F7;">
-                        <div class="wc-navbar">
-                            <div class="wc-nav-left">
-                                <button class="wc-nav-btn" onclick="wcCloseMyFavorites()">
-                                    <svg class="wc-icon" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"></polyline></svg>
-                                    返回
-                                </button>
-                            </div>
-                            <div class="wc-nav-title">我的收藏</div>
-                            <div class="wc-nav-right"></div>
-                        </div>
-                        <div class="wc-main-content" style="padding-top: 64px; background: #F2F2F7;">
-                            <div id="wc-my-favorites-list" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
-                                <!-- 收藏折叠卡片将在这里生成 -->
-                            </div>
+                    <!-- My Favorites Page (修复点击穿透退出Bug) -->
+                    <div id="wc-view-my-favorites" class="wc-page" style="background: #F2F2F7;">
+                        <div id="wc-my-favorites-list" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                            <!-- 收藏折叠卡片将在这里生成 -->
                         </div>
                     </div>
 

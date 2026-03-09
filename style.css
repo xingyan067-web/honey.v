@@ -4196,91 +4196,258 @@ input::-webkit-inner-spin-button {
     margin-top: 12px; text-align: right; font-size: 13px; color: #FF3B30; font-weight: 600; cursor: pointer;
 }
 /* ========================================== */
-/* iOS PWA 全屏修复覆盖层 - 解决顶部/底部白边黑边 */
-/* 放在 style.css 最底部，覆盖前面的旧样式 */
+/* iOS PWA 全屏 + 键盘适配最终版 */
+/* 替换原来的“iOS PWA 全屏修复覆盖层”整段 */
 /* ========================================== */
 
-html {
+:root {
+    --app-height: 100vh;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+    --keyboard-offset: 0px;
+}
+
+/* 基础根节点 */
+html, body {
+    width: 100%;
     height: 100%;
-    height: -webkit-fill-available;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
     background: #000;
     overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+html {
+    height: -webkit-fill-available;
 }
 
 body {
-    width: 100% !important;
-    min-height: 100vh;
-    min-height: 100svh;
+    min-height: 100%;
     min-height: -webkit-fill-available;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    position: relative !important;
-    background: #000 !important;
+    position: fixed;
+    inset: 0;
 }
 
-/* 不要再让 100vw + fixed 把 iOS 视口撑错 */
+/* 主容器必须彻底铺满 */
 #app-root {
-    position: fixed !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100vh !important;
-    height: 100svh !important;
-    height: -webkit-fill-available !important;
-    overflow: hidden !important;
-    background: #000 !important;
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: var(--app-height);
+    overflow: hidden;
+    background: #000;
 }
 
-/* 主屏幕必须真正铺满整个安全区 */
+/* 主屏幕 */
 .screen {
-    position: absolute !important;
-    inset: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    min-height: 100% !important;
-    padding-top: env(safe-area-inset-top) !important;
-    padding-bottom: env(safe-area-inset-bottom) !important;
-    background-color: #000 !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: var(--app-height);
+    min-height: var(--app-height);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding-top: var(--safe-top);
+    padding-bottom: var(--safe-bottom);
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
-    overflow: hidden !important;
+    background-color: #000;
 }
 
-/* 所有全屏层统一按 iPhone 安全区走，避免顶部/底部露白 */
+/* 所有全屏页面统一高度 */
 .settings-modal,
 .dream-fullscreen-view,
 #wc-view-phone-sim,
-#system-update-popup,
-#activation-overlay {
+#activation-overlay,
+#wechatModal,
+#musicModal,
+#loversSpaceModal,
+#music-full-player,
+#wc-view-shopping {
     position: fixed !important;
     inset: 0 !important;
     width: 100% !important;
-    height: 100vh !important;
-    height: 100svh !important;
-    height: -webkit-fill-available !important;
+    height: var(--app-height) !important;
+    min-height: var(--app-height) !important;
     max-height: none !important;
-}
-
-/* 这些页面内容本身就有 header/footer，所以不要统一强加双重 padding */
-.settings-modal,
-.dream-fullscreen-view,
-#wc-view-phone-sim {
     overflow: hidden !important;
 }
 
-/* 激活页和主容器必须彻底铺满 */
-#activation-overlay,
+/* 微信根容器 */
+#wechat-root,
+#music-root,
+#dream-main-page,
+#dream-chat-page,
+#wc-view-shopping,
+#music-full-player {
+    width: 100%;
+    height: 100%;
+    min-height: 100%;
+    background: #fff;
+    overflow: hidden;
+}
+
+/* Dock 贴底，不留白 */
+.dock-container {
+    bottom: 0 !important;
+    left: 0;
+    width: 100%;
+    padding: 0 15px calc(var(--safe-bottom) + 8px) 15px !important;
+    z-index: 10;
+}
+
+/* 各种底栏统一适配安全区 */
+.wc-tabbar-container,
+.ins-music-tabbar,
+.ls-tabbar,
+.settings-tab-bar {
+    padding-bottom: var(--safe-bottom) !important;
+}
+
+/* 微信聊天详情页 */
+#wc-view-chat-detail {
+    height: 100% !important;
+    min-height: 100% !important;
+    overflow: hidden !important;
+    background: #F2F2F7;
+}
+
+/* 微信消息列表区域：给底部输入栏和键盘留空间 */
+.wc-chat-scroll-area {
+    flex: 1;
+    overflow-y: auto;
+    padding:
+        calc(var(--wc-navbar-height) + var(--wc-safe-area-top) + 10px)
+        16px
+        calc(var(--wc-input-height) + var(--safe-bottom) + var(--keyboard-offset) + 20px)
+        16px !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+}
+
+/* 微信输入栏固定在底部，不要跟着页面乱跳 */
+.wc-chat-footer {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    min-height: var(--wc-input-height);
+    background: #F7F7F7;
+    border-top: 0.5px solid #C6C6C8;
+    padding: 8px 12px calc(var(--safe-bottom) + 8px) 12px !important;
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    z-index: 1200;
+    transform: translateY(calc(-1 * var(--keyboard-offset)));
+    transition: transform 0.22s ease;
+}
+
+/* 微信多选底栏 */
+#wc-multi-select-footer {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    transform: translateY(calc(-1 * var(--keyboard-offset)));
+    transition: transform 0.22s ease;
+    padding-bottom: var(--safe-bottom);
+}
+
+/* 梦境页 */
+#dream-chat-page {
+    background: #FAFAFA !important;
+}
+
+.dream-chat-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px 20px calc(90px + var(--safe-bottom) + var(--keyboard-offset)) 20px !important;
+    background: #FAFAFA !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* 梦境输入栏固定到底部 */
+.dream-chat-footer {
+    position: absolute !important;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    background: #FAFAFA !important;
+    border-top: 1px solid #E5E5EA !important;
+    padding: 12px 15px calc(var(--safe-bottom) + 12px) 15px !important;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: flex-end !important;
+    gap: 12px !important;
+    transform: translateY(calc(-1 * var(--keyboard-offset)));
+    transition: transform 0.22s ease;
+    z-index: 50;
+}
+
+.dream-chat-footer textarea {
+    flex: 1 !important;
+    min-height: 44px !important;
+    max-height: 120px !important;
+    background: #FFF !important;
+    border: 1px solid #E5E5EA !important;
+    border-radius: 22px !important;
+    padding: 12px 16px !important;
+    resize: none !important;
+}
+
+/* 音乐全屏播放器：彻底纯白，防止键盘时露黑 */
+.ins-music-full-player {
+    background: #FFF !important;
+}
+
+.ins-music-full-player::before {
+    content: '';
+    position: absolute;
+    inset: -50vh 0 -50vh 0;
+    background: #FFF;
+    z-index: -1;
+}
+
+/* 音乐聊天浮窗 */
+.music-chat-window {
+    background: rgba(255,255,255,0.82) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+}
+
+/* 手机模拟器也统一铺满 */
+#wc-view-phone-sim,
+.wc-phone-bezel,
+.wc-phone-screen {
+    background: #000 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    max-height: none !important;
+    border-radius: 0 !important;
+}
+
+/* 防止底部白边/黑边 */
 #mainScreen,
 #wechatModal,
 #musicModal,
-#loversSpaceModal {
+#loversSpaceModal,
+#dream-main-page,
+#dream-chat-page {
     background-size: cover !important;
     background-position: center center !important;
     background-repeat: no-repeat !important;
 }
 
-/* 防止 iOS 橡皮筋拖动露出系统底色 */
+/* 彻底关闭橡皮筋露底 */
 body,
 #app-root,
 .screen,
@@ -4289,76 +4456,28 @@ body,
 #wc-view-phone-sim,
 #wc-view-shopping,
 #music-full-player,
-#wechat-root {
-    overscroll-behavior: none !important;
-    -webkit-overflow-scrolling: touch;
-}
-
-/* 某些页面原来只写了 height:100%，在 iPhone 长屏/刘海屏会露边，这里统一补强 */
 #wechat-root,
-#music-root,
-#dream-main-page,
 #dream-chat-page,
-#wc-view-shopping,
-#music-full-player {
-    min-height: 100vh !important;
-    min-height: 100svh !important;
-    min-height: -webkit-fill-available !important;
+#dream-main-page {
+    overscroll-behavior: none !important;
 }
 
-/* Dock 永远贴合底部安全区，不留白 */
-.dock-container {
-    bottom: 0 !important;
-    padding-bottom: calc(env(safe-area-inset-bottom) + 8px) !important;
-}
-
-/* 音乐/微信底部栏统一吃掉安全区 */
-.wc-tabbar-container,
-.ins-music-tabbar,
-.ls-tabbar,
-.settings-tab-bar {
-    padding-bottom: env(safe-area-inset-bottom) !important;
-}
-
-/* iPhone 官方常见逻辑宽度做细调（不是必须，但更稳） */
-/* 375: iPhone X/11 Pro/12 mini/13 mini/SE 等 */
+/* Apple 常见逻辑宽度微调，参考苹果官方常见逻辑宽 */
 @media screen and (width: 375px) {
-    :root {
-        --icon-size: 58px;
-    }
+    :root { --icon-size: 58px; }
 }
-
-/* 390: iPhone 12/13/14 标准版 */
 @media screen and (width: 390px) {
-    :root {
-        --icon-size: 60px;
-    }
+    :root { --icon-size: 60px; }
 }
-
-/* 393: iPhone 14 Pro / 15 Pro / 16 Pro */
 @media screen and (width: 393px) {
-    :root {
-        --icon-size: 60px;
-    }
+    :root { --icon-size: 60px; }
 }
-
-/* 414: Plus/Max 部分机型 */
 @media screen and (width: 414px) {
-    :root {
-        --icon-size: 62px;
-    }
+    :root { --icon-size: 62px; }
 }
-
-/* 428: Pro Max */
 @media screen and (width: 428px) {
-    :root {
-        --icon-size: 64px;
-    }
+    :root { --icon-size: 64px; }
 }
-
-/* 430: iPhone 15/16 Pro Max */
 @media screen and (width: 430px) {
-    :root {
-        --icon-size: 64px;
-    }
+    :root { --icon-size: 64px; }
 }

@@ -4,11 +4,11 @@
 /* --- 从这里开始替换 --- */
 html, body {
     width: 100%;
-    height: 100%; /* 放弃 vh/dvh，使用 100% 配合 fixed 是 iOS PWA 最完美的防黑边方案 */
+    height: 100vh !important; /* 强制使用 100vh，无视动态视口，确保填满物理屏幕底部 */
     margin: 0;
     padding: 0;
     overflow: hidden;
-    position: fixed; /* 锁定 body，防止整个页面被键盘顶出黑边 */
+    position: fixed;
     top: 0;
     left: 0;
     background: #000;
@@ -21,7 +21,7 @@ body, input, textarea, select, button {
 }
 #app-root {
     width: 100%;
-    height: 100%;
+    height: 100vh !important; /* 同步改为 100vh */
     position: absolute; 
     top: 0;
     left: 0;

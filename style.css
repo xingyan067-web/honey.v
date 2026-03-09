@@ -4,14 +4,15 @@
 /* --- 从这里开始替换 --- */
 html, body {
     width: 100%;
-    height: 100vh !important; /* 强制使用 100vh，无视动态视口，确保填满物理屏幕底部 */
+    height: 100%;
+    height: -webkit-fill-available; /* 苹果专属：完美填满可用屏幕，不超出版心 */
     margin: 0;
     padding: 0;
     overflow: hidden;
     position: fixed;
     top: 0;
     left: 0;
-    background: #000;
+    background: #fff; /* 彻底告别黑边，改为白色底 */
     overscroll-behavior: none;
     -webkit-overflow-scrolling: touch;
 }
@@ -21,7 +22,8 @@ body, input, textarea, select, button {
 }
 #app-root {
     width: 100%;
-    height: 100vh !important; /* 同步改为 100vh */
+    height: 100%;
+    height: -webkit-fill-available;
     position: absolute; 
     top: 0;
     left: 0;
@@ -4194,7 +4196,7 @@ input::-webkit-inner-spin-button {
 /* 🍎 iOS 全屏终极修复 (从 :root 到具体容器) 🍎 */
 /* ========================================== */
 
-/* 1. 基础变量：使用 100% 替代 dvh，防止键盘弹出时容器缩小漏出底色 */
+/* 1. 基础变量 */
 :root {
   --app-height: 100%;
   --safe-top: env(safe-area-inset-top, 0px);
@@ -4203,69 +4205,59 @@ input::-webkit-inner-spin-button {
 }
 
 /* 2. 根节点强制全屏 (关键修复点) */
-html {
-  height: 100%;
-  height: -webkit-fill-available; /* iOS Safari 关键属性 */
-  background: #000; /* 防止露白时显示白底 */
-}
-
-body {
+html, body {
   width: 100%;
-  height: 100vh; /* 备用 */
-  height: 100dvh; /* 动态视口高度，解决地址栏问题 */
-  min-height: 100vh;
-  min-height: -webkit-fill-available; /* iOS 关键 */
+  height: 100%;
+  height: -webkit-fill-available; 
   margin: 0;
   padding: 0;
   overflow: hidden;
-  position: fixed; /* 防止 iOS 橡皮筋效果 */
+  position: fixed; 
   inset: 0;
-  background: #000; /* 全局黑色背景防白边 */
-  overscroll-behavior: none; /* 防止滚动溢出 */
+  background: #fff; 
+  overscroll-behavior: none; 
   -webkit-overflow-scrolling: touch;
 }
 
 /* 3. 主应用容器强制铺满 */
 #app-root {
-  position: fixed;
+  position: absolute;
   inset: 0;
   width: 100%;
-  height: var(--app-height);
-  min-height: -webkit-fill-available;
+  height: 100%;
+  height: -webkit-fill-available;
   overflow: hidden;
-  background: #000; /* 确保背景一致 */
+  background: transparent;
   z-index: 1;
 }
 
-/* 4. 主屏幕容器 (关键：使用安全区变量) */
+/* 4. 主屏幕容器 */
 .screen {
   position: absolute;
   inset: 0;
   width: 100%;
-  height: var(--app-height);
-  min-height: var(--app-height);
+  height: 100%;
+  height: -webkit-fill-available;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  /* 核心：利用 env() 填充刘海和底部横条区域 */
   padding-top: var(--safe-top);
   padding-bottom: var(--safe-bottom);
   background-size: cover !important;
   background-position: center center !important;
   background-repeat: no-repeat !important;
-  background-color: #000; /* 防止图片加载前露白 */
+  background-color: #fff; 
 }
 
-/* 5. Dock 栏贴底 (不留白边) */
+/* 5. Dock 栏贴底 */
 .dock-container {
   position: absolute;
-  bottom: 0 !important; /* 强制贴底 */
+  bottom: 0 !important; 
   left: 0;
   width: 100%;
   display: flex;
   justify-content: center;
-  /* 关键：使用 max() 确保在安全和非安全区域都正确 */
   padding: 0 15px calc(var(--safe-bottom) + 8px) 15px !important;
   z-index: 10;
 }
@@ -4293,19 +4285,20 @@ body {
 #loversSpaceModal,
 #music-full-player,
 #wc-view-shopping {
-  position: absolute !important; /* 改为 absolute，跟随 app-root */
-  top: 0 !important;
-  left: 0 !important;
+  position: absolute !important;
+  inset: 0 !important;
   width: 100% !important;
   height: 100% !important;
+  height: -webkit-fill-available !important;
   min-height: 100% !important;
-  max-height: none !important;
+  max-height: none !important; 
   overflow: hidden !important;
   padding-top: var(--safe-top);
-  padding-bottom: var(--safe-bottom);
+  /* 关键修复：删除 padding-bottom，让内部组件自己处理底部安全区，防止双重挤压把按钮顶出屏幕 */
+  box-sizing: border-box !important;
 }
 
-/* 7. 微信/聊天页面特殊处理 (防止键盘顶起露白) */
+/* 7. 微信/聊天页面特殊处理 */
 #wechat-root {
   width: 100%;
   height: 100%;
@@ -4313,7 +4306,6 @@ body {
   overflow: hidden;
 }
 
-/* 微信聊天详情页强制全屏 */
 #wc-view-chat-detail {
   height: 100% !important;
   min-height: 100% !important;
@@ -4321,7 +4313,6 @@ body {
   background: #F2F2F7;
 }
 
-/* 微信消息区域：给底部输入栏和键盘留空间 */
 .wc-chat-scroll-area {
   flex: 1;
   overflow-y: auto;
@@ -4330,7 +4321,6 @@ body {
   overscroll-behavior: contain;
 }
 
-/* 微信输入栏固定在底部 */
 .wc-chat-footer {
   position: absolute !important;
   left: 0;
@@ -4339,20 +4329,35 @@ body {
   width: 100%;
   background: #F7F7F7;
   border-top: 0.5px solid #C6C6C8;
-  /* 关键：使用 max() 确保在 iOS 安全区正确 */
   padding: 8px 12px max(10px, env(safe-area-inset-bottom)) 12px !important;
   z-index: 1200;
 }
 
 /* 8. 底部 Tabbar 统一处理 */
-.wc-tabbar-container,
+.wc-tabbar-container {
+  position: absolute !important;
+  bottom: 0 !important;
+  left: 0;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  z-index: 1000;
+  pointer-events: none;
+  padding-bottom: max(20px, var(--safe-bottom)) !important;
+}
+
 .ins-music-tabbar,
 .ls-tabbar,
 .settings-tab-bar {
   padding-bottom: var(--safe-bottom) !important;
 }
 
-/* 9. 防止 iOS 橡皮筋滚动露底 */
+/* 9. 音乐播放器底部控制栏恢复安全距离 */
+.ins-music-fp-controls {
+  padding: 10px 30px calc(env(safe-area-inset-bottom, 20px) + 20px) 30px !important;
+}
+
+/* 10. 防止 iOS 橡皮筋滚动露底 */
 body,
 #app-root,
 .screen,
@@ -4367,34 +4372,21 @@ body,
   overscroll-behavior: none !important;
 }
 
-/* 10. 针对 iPhone 不同机型的微调 (基于苹果官方逻辑宽度) */
-@media screen and (width: 375px) { /* iPhone SE/8/13 mini */
+/* 11. 针对 iPhone 不同机型的微调 */
+@media screen and (width: 375px) { 
   :root { --icon-size: 58px; }
   .home-grid { grid-template-rows: repeat(6, 1fr); }
 }
-
-@media screen and (width: 390px) { /* iPhone 14/15 */
-  :root { --icon-size: 60px; }
-}
-
-@media screen and (width: 393px) { /* iPhone 14 Pro/15 Pro */
-  :root { --icon-size: 60px; }
-}
-
-@media screen and (width: 414px) { /* iPhone Plus/Max 系列 */
+@media screen and (width: 390px) { :root { --icon-size: 60px; } }
+@media screen and (width: 393px) { :root { --icon-size: 60px; } }
+@media screen and (width: 414px) { 
   :root { --icon-size: 62px; }
   .home-grid { grid-template-rows: repeat(7, 1fr); }
 }
+@media screen and (width: 428px) { :root { --icon-size: 64px; } }
+@media screen and (width: 430px) { :root { --icon-size: 64px; } }
 
-@media screen and (width: 428px) { /* iPhone 14 Pro Max */
-  :root { --icon-size: 64px; }
-}
-
-@media screen and (width: 430px) { /* iPhone 15 Pro Max */
-  :root { --icon-size: 64px; }
-}
-
-/* 11. 矮屏机型特殊适配 (iPhone SE 等带 Home 键机型) */
+/* 12. 矮屏机型特殊适配 */
 @media screen and (max-height: 700px) {
   :root {
     --grid-gap-y: clamp(8px, 2vh, 15px);
@@ -4405,7 +4397,7 @@ body,
   }
 }
 
-/* 12. 超长屏机型 (Pro Max 系列) */
+/* 13. 超长屏机型 */
 @media screen and (min-height: 890px) {
   :root {
     --grid-gap-y: clamp(20px, 3.5vh, 35px);

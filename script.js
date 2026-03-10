@@ -1,62 +1,3 @@
-// ==========================================
-// 🍎 苹果全机型尺寸读取与自适应引擎 🍎
-// ==========================================
-const AppleDeviceEngine = {
-    // 苹果官方逻辑分辨率字典 (宽 x 高)
-    devices: [
-        { name: "iPhone 15/14 Pro Max, 16 Plus", w: 430, h: 932, type: "max" },
-        { name: "iPhone 12/13/14 Pro Max, 15 Plus", w: 428, h: 926, type: "max" },
-        { name: "iPhone 11 Pro Max, XS Max", w: 414, h: 896, type: "max" },
-        { name: "iPhone 16 Pro", w: 402, h: 874, type: "pro" },
-        { name: "iPhone 14/15 Pro, 16", w: 393, h: 852, type: "pro" },
-        { name: "iPhone 12/13/14, 12/13 Pro", w: 390, h: 844, type: "pro" },
-        { name: "iPhone 11, XR", w: 414, h: 896, type: "standard" },
-        { name: "iPhone X, XS, 11 Pro", w: 375, h: 812, type: "mini" },
-        { name: "iPhone 12/13 mini", w: 375, h: 812, type: "mini" },
-        { name: "iPhone SE (2/3代), 8, 7, 6", w: 375, h: 667, type: "se" },
-        { name: "iPhone SE (1代), 5, 5s", w: 320, h: 568, type: "se-small" }
-    ],
-
-    init() {
-        this.adapt();
-        window.addEventListener('resize', () => this.adapt());
-    },
-
-    adapt() {
-        const width = window.innerWidth;
-        const height = window.innerHeight;
-        const ratio = height / width;
-        const root = document.documentElement;
-
-        // 1. 寻找最匹配的苹果机型
-        let matchedDevice = this.devices.find(d => Math.abs(d.w - width) <= 10) || { type: "standard", name: "Unknown/Android" };
-        
-        // 针对安卓等非标准尺寸，通过宽高比进行二次纠正
-        if (matchedDevice.name === "Unknown/Android") {
-            if (ratio > 2.1) matchedDevice.type = width >= 410 ? "max" : "pro";
-            else if (ratio > 1.9) matchedDevice.type = "mini";
-            else matchedDevice.type = "se";
-        }
-
-        // 2. 计算动态缩放比例 (以 iPhone 14 Pro 的 393px 为基准)
-        // 限制缩放范围在 0.85 到 1.15 之间，防止极端屏幕导致 UI 崩坏
-        let scale = Math.min(1.15, Math.max(0.85, width / 393));
-
-        // 3. 将数据注入到 CSS 变量中
-        root.style.setProperty('--ui-scale', scale);
-        root.style.setProperty('--device-w', `${width}px`);
-        root.style.setProperty('--device-h', `${height}px`);
-
-        // 4. 给 body 添加机型专属 class，方便 CSS 做特殊处理
-        document.body.classList.remove('device-max', 'device-pro', 'device-standard', 'device-mini', 'device-se', 'device-se-small');
-        document.body.classList.add(`device-${matchedDevice.type}`);
-
-        console.log(`📱 屏幕尺寸: ${width}x${height} | 识别机型: ${matchedDevice.name} | UI缩放率: ${scale.toFixed(2)}`);
-    }
-};
-
-// 启动自适应引擎
-AppleDeviceEngine.init();
 
 // --- 激活码逻辑 (V2强制重新激活版) ---
 
@@ -362,14 +303,27 @@ window.onload = async function() {
 // iOS / PWA 全屏与键盘自适应最终版
 function updateAppViewportVars() {
     const docStyle = document.documentElement.style;
-    // 【关键修改】：不要动态缩小 --app-height，这会导致键盘弹出时整个页面缩小，漏出黑白底色！
-    // 保持 100% 高度，让 iOS 原生接管键盘上推
-    docStyle.setProperty('--app-height', `100%`);
+    
+    // 检查是否为 PWA 桌面模式 (添加到桌面后打开)
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    
+    if (isStandalone) {
+        // PWA 模式下，强制锁定 100vh，防止键盘弹出时整个页面被压缩导致漏出黑白底色
+        docStyle.setProperty('--app-height', `100vh`);
+    } else {
+        // 浏览器模式下，使用 window.innerHeight 应对 Safari 底部地址栏的收缩
+        docStyle.setProperty('--app-height', `${window.innerHeight}px`);
+    }
+    
     // 统一输入栏高度变量，给微信聊天滚动区预留空间
-    document.documentElement.style.setProperty('--wc-input-height', '64px');
+    docStyle.setProperty('--wc-input-height', '64px');
     docStyle.setProperty('--keyboard-offset', '0px');
 }
 
+// 监听窗口大小变化（处理屏幕旋转或浏览器地址栏收缩）
+window.addEventListener('resize', updateAppViewportVars);
+// 初始化调用一次
+updateAppViewportVars();
 
     // 通用输入框确认按钮事件绑定
     const generalConfirmBtn = document.getElementById('wc-general-input-confirm');
